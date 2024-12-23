@@ -91,7 +91,7 @@ pub fn build(tag: String) {
         )
         .unwrap();
 
-        let ver = semver::Version::parse(tag.as_str()).unwrap();
+        let ver = semver::Version::parse(&tag[1..]).unwrap();
 
         Command::new("gh")
             .args(["release", "upload", &tag, &out_path, "--clobber"])
