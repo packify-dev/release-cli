@@ -258,26 +258,32 @@ pub fn release(r#type: String) {
     repo.reset(commit.as_object(), git2::ResetType::Mixed, None)
         .unwrap();
 
+    let branch = repo.head().unwrap();
+    let branch = branch.shorthand().unwrap();
     match new_channel {
         ReleaseType::Alpha(_) => {
-            force_merge(&repo, repo.head().unwrap().shorthand().unwrap(), "alpha");
+            force_merge(&repo, branch, "alpha");
         }
         ReleaseType::Beta(_) => {
-            force_merge(&repo, repo.head().unwrap().shorthand().unwrap(), "alpha");
+            force_merge(&repo, branch, "alpha");
             force_merge(&repo, "alpha", "beta");
         }
         ReleaseType::Candidate(_) => {
-            force_merge(&repo, repo.head().unwrap().shorthand().unwrap(), "alpha");
+            force_merge(&repo, branch, "alpha");
             force_merge(&repo, "alpha", "beta");
             force_merge(&repo, "beta", "rc");
         }
         ReleaseType::Stable => {
-            force_merge(&repo, repo.head().unwrap().shorthand().unwrap(), "alpha");
+            force_merge(&repo, branch, "alpha");
             force_merge(&repo, "alpha", "beta");
             force_merge(&repo, "beta", "rc");
             force_merge(&repo, "rc", "main");
         }
     }
+
+    let (object, reference) = repo.revparse_ext(branch).unwrap();
+    repo.checkout_tree(&object, None).unwrap();
+    repo.set_head(reference.unwrap().name().unwrap()).unwrap();
 
     Command::new("git")
         .args(["push", "--all"])
