@@ -291,4 +291,28 @@ pub fn release(r#type: String) {
         .unwrap()
         .wait()
         .unwrap();
+
+    Command::new("gh")
+        .args([
+            "release",
+            "create",
+            format!("v{}", ver).as_str(),
+            "--generate-notes",
+            "--target",
+            match new_channel {
+                ReleaseType::Alpha(_) => "alpha",
+                ReleaseType::Beta(_) => "beta",
+                ReleaseType::Candidate(_) => "rc",
+                ReleaseType::Stable => "main",
+            },
+            "--latest",
+            match new_channel {
+                ReleaseType::Stable => "",
+                _ => "--prerelease",
+            },
+        ])
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
 }
