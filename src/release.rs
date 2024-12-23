@@ -71,7 +71,6 @@ fn force_merge(repo: &Repository, source_branch: &str, target_branch: &str) {
         .unwrap();
     let source_commit = source_ref.peel_to_commit().unwrap();
 
-    // Hole oder erstelle den Ziel-Branch (beta)
     let mut target_ref = match repo.find_reference(&format!("refs/heads/{}", target_branch)) {
         Ok(r) => r,
         Err(_) => repo
@@ -80,12 +79,10 @@ fn force_merge(repo: &Repository, source_branch: &str, target_branch: &str) {
             .into_reference(),
     };
 
-    // Setze den Ziel-Branch auf den Commit des Quell-Branches
     target_ref
         .set_target(source_commit.id(), "Force merge by overwriting")
         .unwrap();
 
-    // Aktualisiere die HEAD-Referenz auf den Ziel-Branch (optional, falls `beta` ausgecheckt werden soll)
     repo.set_head(&format!("refs/heads/{}", target_branch))
         .unwrap();
     repo.checkout_head(Some(git2::build::CheckoutBuilder::default().force()))
@@ -315,6 +312,13 @@ pub fn release(r#type: String) {
     }
     Command::new("gh")
         .args(args)
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
+
+    Command::new("git")
+        .args(["fetch", "--tags", "origin"])
         .spawn()
         .unwrap()
         .wait()

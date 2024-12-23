@@ -1,3 +1,4 @@
+mod build;
 mod release;
 
 use clap::{Parser, Subcommand};
@@ -15,6 +16,11 @@ enum Commands {
         #[clap(long, short)]
         r#type: String,
     },
+    Build {
+        #[clap(long, short)]
+        tag: String,
+    },
+    Info {},
 }
 
 fn main() {
@@ -23,6 +29,19 @@ fn main() {
     match args.command {
         Commands::Release { r#type } => {
             release::release(r#type);
+        }
+        Commands::Info {} => {
+            println!(
+                "channel: {}\nmajor: {}\nminor: {}\npatch: {}\nfull version string: {}",
+                option_env!("RELEASE_CHANNEL").unwrap_or("unknown"),
+                option_env!("RELEASE_MAJOR").unwrap_or("unknown"),
+                option_env!("RELEASE_MINOR").unwrap_or("unknown"),
+                option_env!("RELEASE_PATCH").unwrap_or("unknown"),
+                option_env!("RELEASE_VERSION").unwrap_or("unknown")
+            );
+        }
+        Commands::Build { tag } => {
+            build::build(tag);
         }
     }
 }
