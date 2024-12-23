@@ -279,5 +279,10 @@ pub fn release(r#type: String) {
         }
     }
 
-    Command::new("git push").spawn().unwrap().wait().unwrap();
+    Command::new("git")
+        .args(["push", "--all"])
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
 }
