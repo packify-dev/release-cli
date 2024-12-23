@@ -1,0 +1,5 @@
+type = "rust"
+
+[build]
+architectures = ["amd64", "arm64", "i386", "armhf"]
+platforms = ["linux", "windows", "macos"]
