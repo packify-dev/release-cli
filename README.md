@@ -1,9 +1,21 @@
 # release-cli
 
+## Install
+
+```bash
+sudo curl -L https://ghr.packify.dev/packify-dev/release-cli/latest/download/linux/amd64 -o /usr/local/bin/release-cli
+```
+
 ## Release!
 
 ```bash
-release-cli release -t major
+release-cli release -t <major|minor|patch|alpha|beta|rc>
+```
+
+## Build release binaries
+
+```bash
+release-cli build -t v0.1.0
 ```
 
 ## Setup repository
@@ -27,3 +39,15 @@ git checkout main
 ```
 
 It's recommended to use a development branch, but it's not required.
+
+Add the following to your `release.toml`:
+
+```toml
+type = "rust"
+
+[build]
+platforms = [
+    { target = "x86_64-unknown-linux-gnu", platform = "linux", arch = "amd64" },
+    { target = "x86_64-pc-windows-gnu", platform = "windows", arch = "amd64" },
+]
+```

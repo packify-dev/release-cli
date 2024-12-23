@@ -56,9 +56,21 @@ pub fn build(tag: String) {
     for platform in release_toml.build.platforms {
         let target = platform.target;
 
+        let ver = semver::Version::parse(&tag[1..]).unwrap();
+        let mut channel = ver.pre.split('.').collect::<Vec<&str>>()[0];
+        if channel.is_empty() {
+            channel = "stable";
+        }
+
         Command::new("cargo")
             .args(["build", "--release", "--target", target.as_str()])
-            .envs([("RELEASE_VERSION", tag.as_str())])
+            .envs([
+                ("RELEASE_VERSION", tag.as_str()),
+                ("RELEASE_CHANNEL", channel),
+                ("RELEASE_MAJOR", ver.major.to_string().as_str()),
+                ("RELEASE_MINOR", ver.minor.to_string().as_str()),
+                ("RELEASE_PATCH", ver.patch.to_string().as_str()),
+            ])
             .spawn()
             .unwrap()
             .wait()
@@ -91,20 +103,8 @@ pub fn build(tag: String) {
         )
         .unwrap();
 
-        let ver = semver::Version::parse(&tag[1..]).unwrap();
-
         Command::new("gh")
             .args(["release", "upload", &tag, &out_path, "--clobber"])
-            .envs([
-                ("RELEASE_VERSION", tag.as_str()),
-                (
-                    "RELEASE_CHANNEL",
-                    ver.pre.split('.').collect::<Vec<&str>>()[0],
-                ),
-                ("RELEASE_MAJOR", ver.major.to_string().as_str()),
-                ("RELEASE_MINOR", ver.minor.to_string().as_str()),
-                ("RELEASE_PATCH", ver.patch.to_string().as_str()),
-            ])
             .spawn()
             .unwrap()
             .wait()
