@@ -222,4 +222,9 @@ pub fn release(r#type: String) {
         &[&repo.head().unwrap().peel_to_commit().unwrap()],
     )
     .unwrap();
+
+    let head = repo.head().unwrap();
+    let commit = head.peel_to_commit().unwrap();
+    repo.reset(commit.as_object(), git2::ResetType::Mixed, None)
+        .unwrap();
 }
