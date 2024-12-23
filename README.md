@@ -3,8 +3,15 @@
 ## Install
 
 ```bash
-sudo curl -L https://ghr.packify.dev/packify-dev/release-cli/latest/download/linux/amd64 -o /usr/local/bin/release-cli
+sudo curl -L \
+    https://ghr.packify.dev/packify-dev/release-cli/latest/download/linux/amd64 \
+    -o /usr/local/bin/release-cli
 ```
+
+### Binary downloads
+
+[![Linux (amd64)](https://img.shields.io/badge/linux-amd64-fcc624?logo=linux&style=for-the-badge&logoColor=fcc624)](https://ghr.packify.dev/packify-dev/release-cli/latest/download/linux/amd64)
+[![Windows (amd64)](https://img.shields.io/badge/windows-amd64-800000?logo=wine&style=for-the-badge&logoColor=800000)](https://ghr.packify.dev/packify-dev/release-cli/latest/download/windows/amd64)
 
 ## Release!
 
