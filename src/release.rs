@@ -292,25 +292,29 @@ pub fn release(r#type: String) {
         .wait()
         .unwrap();
 
+    let vstr = format!("v{}", ver);
+    let mut args = vec![
+        "release",
+        "create",
+        vstr.as_str(),
+        "--generate-notes",
+        "--target",
+        match new_channel {
+            ReleaseType::Alpha(_) => "alpha",
+            ReleaseType::Beta(_) => "beta",
+            ReleaseType::Candidate(_) => "rc",
+            ReleaseType::Stable => "main",
+        },
+        "--latest",
+    ];
+    match new_channel {
+        ReleaseType::Stable => {}
+        _ => {
+            args.push("--prerelease");
+        }
+    }
     Command::new("gh")
-        .args([
-            "release",
-            "create",
-            format!("v{}", ver).as_str(),
-            "--generate-notes",
-            "--target",
-            match new_channel {
-                ReleaseType::Alpha(_) => "alpha",
-                ReleaseType::Beta(_) => "beta",
-                ReleaseType::Candidate(_) => "rc",
-                ReleaseType::Stable => "main",
-            },
-            "--latest",
-            match new_channel {
-                ReleaseType::Stable => "",
-                _ => "--prerelease",
-            },
-        ])
+        .args(args)
         .spawn()
         .unwrap()
         .wait()
