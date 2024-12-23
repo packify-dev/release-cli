@@ -1,7 +1,10 @@
 use git2::Repository;
 use semver::Version;
 use serde::Deserialize;
-use std::fmt::{self, Display};
+use std::{
+    fmt::{self, Display},
+    process::Command,
+};
 
 #[derive(Deserialize)]
 struct CargoToml {
@@ -60,6 +63,33 @@ fn get_releaseinfo() -> (u64, u64, u64, ReleaseType) {
             _ => ReleaseType::Stable,
         },
     )
+}
+
+fn force_merge(repo: &Repository, source_branch: &str, target_branch: &str) {
+    let source_ref = repo
+        .find_reference(&format!("refs/heads/{}", source_branch))
+        .unwrap();
+    let source_commit = source_ref.peel_to_commit().unwrap();
+
+    // Hole oder erstelle den Ziel-Branch (beta)
+    let mut target_ref = match repo.find_reference(&format!("refs/heads/{}", target_branch)) {
+        Ok(r) => r,
+        Err(_) => repo
+            .branch(target_branch, &source_commit, true)
+            .unwrap()
+            .into_reference(),
+    };
+
+    // Setze den Ziel-Branch auf den Commit des Quell-Branches
+    target_ref
+        .set_target(source_commit.id(), "Force merge by overwriting")
+        .unwrap();
+
+    // Aktualisiere die HEAD-Referenz auf den Ziel-Branch (optional, falls `beta` ausgecheckt werden soll)
+    repo.set_head(&format!("refs/heads/{}", target_branch))
+        .unwrap();
+    repo.checkout_head(Some(git2::build::CheckoutBuilder::default().force()))
+        .unwrap();
 }
 
 pub fn release(r#type: String) {
@@ -227,4 +257,27 @@ pub fn release(r#type: String) {
     let commit = head.peel_to_commit().unwrap();
     repo.reset(commit.as_object(), git2::ResetType::Mixed, None)
         .unwrap();
+
+    match new_channel {
+        ReleaseType::Alpha(_) => {
+            force_merge(&repo, repo.head().unwrap().shorthand().unwrap(), "alpha");
+        }
+        ReleaseType::Beta(_) => {
+            force_merge(&repo, repo.head().unwrap().shorthand().unwrap(), "alpha");
+            force_merge(&repo, "alpha", "beta");
+        }
+        ReleaseType::Candidate(_) => {
+            force_merge(&repo, repo.head().unwrap().shorthand().unwrap(), "alpha");
+            force_merge(&repo, "alpha", "beta");
+            force_merge(&repo, "beta", "rc");
+        }
+        ReleaseType::Stable => {
+            force_merge(&repo, repo.head().unwrap().shorthand().unwrap(), "alpha");
+            force_merge(&repo, "alpha", "beta");
+            force_merge(&repo, "beta", "rc");
+            force_merge(&repo, "rc", "main");
+        }
+    }
+
+    Command::new("git push").spawn().unwrap().wait().unwrap();
 }

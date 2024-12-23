@@ -1,3 +1,19 @@
-# rust-template
+# release-cli
 
-My Rust project template. Feel free to do everything you want with it as this is licensed under WTFPL.
+## Setup repository
+
+```bash
+git branch alpha
+git checkout alpha
+git push origin alpha
+
+git branch beta
+git checkout beta
+git push origin beta
+
+git branch rc
+git checkout rc
+git push origin rc
+
+git checkout main
+```
